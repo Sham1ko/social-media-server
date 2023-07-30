@@ -3,7 +3,7 @@ import { Model, Types } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { PublicUser } from './dto/IUser';
+import { FullUser, PublicUser } from './dto/IUser';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from './entities/user.entity';
 
@@ -86,11 +86,11 @@ export class UserService {
    * @param email - The email of the user to find.
    * @returns A Promise that resolves to the user with the given email.
    */
-  async findByEmail(email: string): Promise<PublicUser> {
+  async findByEmail(email: string): Promise<FullUser> {
     try {
       const user = await this.userRepository
         .findOne({ email })
-        .select('_id username email');
+        .select('_id username email password');
       if (!user) {
         throw new NotFoundException('User does not exist');
       }

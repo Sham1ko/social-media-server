@@ -5,3 +5,7 @@ export interface PublicUser {
   username: string;
   email: string;
 }
+
+export interface FullUser extends PublicUser {
+  password: string;
+}

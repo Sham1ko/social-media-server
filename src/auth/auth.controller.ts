@@ -1,9 +1,12 @@
 import {
   Body,
   Controller,
+  Get,
   HttpException,
   HttpStatus,
+  Request,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { MongoServerError } from 'mongodb';
@@ -12,6 +15,7 @@ import { IAuth } from './interfaces';
 import { LoginUserDto } from './dto/login-auth.dto';
 import { RegisterUserDto } from './dto/register-auth.dto';
 import { capitalizeFirstLetter } from 'src/helpers';
+import { AuthGuard } from './auth.guard';
 
 @Controller('auth')
 @ApiTags('Auth')
@@ -100,5 +104,11 @@ export class AuthController {
   })
   async login(@Body() body: LoginUserDto): Promise<IAuth> {
     return await this.authService.login(body);
+  }
+
+  @UseGuards(AuthGuard)
+  @Get('profile')
+  getProfile(@Request() req) {
+    return req.user;
   }
 }

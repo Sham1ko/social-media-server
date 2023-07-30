@@ -1,7 +1,7 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import * as bcrypt from 'bcrypt';
 import { PublicUser } from 'src/user/dto/IUser';
-import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { UserService } from 'src/user/user.service';
 import { IAuth } from './interfaces';
 import { LoginUserDto } from './dto/login-auth.dto';
@@ -47,9 +47,23 @@ export class AuthService {
   async login(body: LoginUserDto): Promise<IAuth> {
     try {
       const user = await this.userService.findByEmail(body.email);
+
+      if (!user) throw new Error('User not found');
+      const isPasswordValid = await bcrypt.compare(
+        body.password,
+        user.password,
+      );
+      if (!isPasswordValid) throw new UnauthorizedException('Invalid password');
       const accessToken = this.generateAccessToken(user);
       const refreshToken = this.generateRefreshToken(user);
-      return { user, tokens: { accessToken, refreshToken } };
+      return {
+        user: {
+          _id: user._id,
+          username: user.username,
+          email: user.email,
+        },
+        tokens: { accessToken, refreshToken },
+      };
     } catch (error) {
       Logger.error(error);
       throw error;
